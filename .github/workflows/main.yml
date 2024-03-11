@@ -1,5 +1,8 @@
 name: Automated Code Cleanup on PR
 
+env:
+  SOLUTION: ImpowerCodeCleanup.sln
+
 on:
   pull_request:
     branches:
@@ -9,7 +12,7 @@ on:
 
 jobs:
   code-cleanup:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
       with:
@@ -25,7 +28,8 @@ jobs:
 
     - name: Perform Code Cleanup
       run: |
-        echo "Perform code cleanup here. Insert the actual commands to clean up code."
+        dotnet tool install -g JetBrains.ReSharper.GlobalTools
+        jb cleanupcode $SOLUTION
 
     - name: Commit and Push Changes if Any
       run: |
