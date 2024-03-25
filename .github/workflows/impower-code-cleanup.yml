@@ -32,7 +32,7 @@ jobs:
 #        echo Title: ${{ github.event.pull_request.title }}
 #        echo Contains [SKIP CI]: ${{ contains(github.event.pull_request.title, '[SKIP CI]') }}
       run: |
-        echo "${{ inputs.nuget_sources }}" | jq -r '.[]' | while read item; do
+        echo '${{ inputs.nuget_sources }}' | jq -r '.[]' | while read item; do
           echo "$item"
         done
       shell: bash
