@@ -14,9 +14,9 @@ on:
         description: "The NuGet sources to restore from"
         type: string
         required: false
+    secrets:
       PAT:
         description: 'Personal access token passed from the caller workflow'
-        type: string
         required: true
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
         repository: impower-ai/impower-code-standards
         path: "impower-code-standards"
         ref: main
-        token: ${{ inputs.PAT }}
+        token: ${{ secrets.PAT }}
 
     - name: Run Code Cleanup
       run: jb cleanupcode --settings="impower-code-standards/dotnet-code-standards.DotSettings" *.sln
@@ -76,7 +76,7 @@ jobs:
       if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
       uses: peter-evans/enable-pull-request-automerge@v3
       with:
-          token: ${{ inputs.PAT }}
+          token: ${{ secrets.PAT }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: squash
 
@@ -84,5 +84,5 @@ jobs:
       if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
       uses: dawidd6/action-delete-branch@v3
       with:
-        github_token: ${{ inputs.PAT }}
+        github_token: ${{ secrets.PAT }}
         branches: impower-resharper-auto-code-cleanup
