@@ -73,7 +73,7 @@ jobs:
           Code Cleanup for Commit https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }} of PullRequest ${{ github.event.pull_request.html_url }}
 
     - name: Auto-Merge Pull Request
-      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
+      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge
       uses: peter-evans/enable-pull-request-automerge@v3
       with:
           token: ${{ secrets.PAT }}
@@ -81,7 +81,7 @@ jobs:
           merge-method: squash
 
     - name: Delete PR branch
-      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
+      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge
       uses: dawidd6/action-delete-branch@v3
       with:
         github_token: ${{ secrets.PAT }}
