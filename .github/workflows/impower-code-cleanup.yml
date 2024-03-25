@@ -1,0 +1,88 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: ReSharper Code Cleanup using Impower Code Standards
+
+on:
+  workflow_call:
+    inputs:
+      auto_merge:
+        description: "Whether or not to automatically merge"
+        type: bool
+        required: true
+      nuget_sources:
+        description: "The NuGet sources to restore from"
+        type: string
+        required: false
+    secrets:
+      PAT:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+jobs:
+  build:
+# Only run if PR was merged and title doesn't contain '[SKIP CI]' (!contains is case-insensitive)
+    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.title, '[SKIP CI]')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+#    - name: Debug Info
+#      run: |
+#        echo Actor: ${{ github.actor }}
+#        echo Title: ${{ github.event.pull_request.title }}
+#        echo Contains [SKIP CI]: ${{ contains(github.event.pull_request.title, '[SKIP CI]') }}
+
+    - name: Setup .NET Environment 
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore NuGet packages
+      run: dotnet restore
+
+    - name: Install ReSharper CLI
+      run: dotnet tool install -g JetBrains.ReSharper.GlobalTools
+
+    - name: Build Solution
+      run: dotnet build --no-restore
+
+    - name: Clone Code Standards Repository
+      uses: actions/checkout@v4
+      with:
+        repository: impower-ai/impower-code-standards
+        path: "impower-code-standards"
+        ref: main
+        token: ${{ secrets.PAT }}
+
+    - name: Run Code Cleanup
+      run: jb cleanupcode --settings="impower-code-standards/dotnet-code-standards.DotSettings" *.sln
+
+    - name: Remove Code Standards Repository
+      run: rm -rf impower-code-standards
+
+    - name: Create Pull Request
+      id: cpr
+      uses: peter-evans/create-pull-request@v6.0.2
+      with:
+        title: '[SKIP CI] Impower ReSharper Auto Code Cleanup'
+        branch: impower-resharper-auto-code-cleanup
+        body: |
+          Original Commit: https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}
+          Original PullRequest: ${{ github.event.pull_request.html_url }}
+        commit-message: |
+          Code Cleanup for Commit https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }} of PullRequest ${{ github.event.pull_request.html_url }}
+
+    - name: Auto-Merge Pull Request
+      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
+      uses: peter-evans/enable-pull-request-automerge@v3
+      with:
+          token: ${{ secrets.PAT }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
+
+    - name: Delete PR branch
+      if: steps.cpr.outputs.pull-request-operation == 'created' && github.event.inputs.auto_merge == 'true'
+      uses: dawidd6/action-delete-branch@v3
+      with:
+        github_token: ${{ secrets.PAT }}
+        branches: impower-resharper-auto-code-cleanup
