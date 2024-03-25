@@ -32,14 +32,9 @@ jobs:
 #        echo Title: ${{ github.event.pull_request.title }}
 #        echo Contains [SKIP CI]: ${{ contains(github.event.pull_request.title, '[SKIP CI]') }}
       run: |
-        LIST_STRINGS=(${{ fromJson(inputs.nuget_sources) }})
-        if [ ${#LIST_STRINGS[@]} -eq 0 ]; then
-          echo "The list is empty."
-        else
-          for item in "${LIST_STRINGS[@]}"; do
-            echo "$item"
-          done
-        fi
+        echo "${{ inputs.nuget_sources }}" | jq -r '.[]' | while read item; do
+          echo "$item"
+        done
       shell: bash
 
 
