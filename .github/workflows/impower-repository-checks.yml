@@ -1,0 +1,50 @@
+name: Impower Repository Checks
+on:
+  workflow_call:
+    inputs:
+      fail_on_unprotected:
+        description: 'Fail the workflow if the branch is unprotected (true/false)'
+        required: true
+        default: false
+        type: boolean
+      branch:
+        description: 'The branch to check'
+        required: true
+        default: "main"
+        type: string
+    secrets:
+      PAT:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+jobs:
+  check-branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Branch Protection
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          TARGET_BRANCH: ${{ github.event.inputs.branch }}
+          FAIL_ON_UNPROTECTED: ${{ github.event.inputs.fail_on_unprotected }}
+        run: |
+          # Fetch branch protection rules
+          PROTECTION_RULES=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/branches/${TARGET_BRANCH}/protection")
+
+          # Determine if restrictions are in place
+          if echo "$PROTECTION_RULES" | grep -q "restrictions"; then
+            echo "Branch protection is enabled: No direct commits allowed, only PRs."
+          else
+            # Decide to warn or error based on the input
+            MESSAGE="Branch protection is not enabled for direct commits."
+            if [ "$FAIL_ON_UNPROTECTED" = "true" ]; then
+              MESSAGE="::error::$MESSAGE"
+              echo "$MESSAGE"
+              exit 1
+            else
+              MESSAGE="::warning::$MESSAGE"
+              echo "$MESSAGE"
+            fi
+          fi
