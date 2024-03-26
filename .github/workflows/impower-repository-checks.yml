@@ -27,7 +27,10 @@ jobs:
           TARGET_BRANCH: ${{ github.event.inputs.branch }}
           FAIL_ON_UNPROTECTED: ${{ github.event.inputs.fail_on_unprotected }}
         run: |
-          # Fetch branch protection rules
+          echo "Target Branch: $TARGET_BRANCH"
+          echo "Fail On Unprotected: $FAIL_ON_UNPROTECTED"
+  
+          # Get branch protection rules
           PROTECTION_RULES=$(curl -s \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
@@ -37,9 +40,8 @@ jobs:
           if echo "$PROTECTION_RULES" | grep -q "restrictions"; then
             echo "Branch protection is enabled: No direct commits allowed, only PRs."
           else
-            # Decide to warn or error based on the input
             MESSAGE="Branch protection is not enabled for direct commits."
-            if [ "$FAIL_ON_UNPROTECTED" = "true" ]; then
+            if [ "$FAIL_ON_UNPROTECTED" = true ]; then
               MESSAGE="::error::$MESSAGE"
               echo "$MESSAGE"
               exit 1
