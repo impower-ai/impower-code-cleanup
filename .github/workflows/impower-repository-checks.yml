@@ -27,9 +27,8 @@ jobs:
           TARGET_BRANCH: ${{ inputs.branch }}
           FAIL_ON_UNPROTECTED: ${{ inputs.fail_on_unprotected }}
         run: |
-          echo "Target Branch: $TARGET_BRANCH"
-          echo "Fail On Unprotected: $FAIL_ON_UNPROTECTED"
-  
+          # echo "Target Branch: $TARGET_BRANCH"
+          # echo "Fail On Unprotected: $FAIL_ON_UNPROTECTED"  
           # Get branch protection rules
           PROTECTION_RULES=$(curl -s \
             -H "Authorization: token $GITHUB_TOKEN" \
