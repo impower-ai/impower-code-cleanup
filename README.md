@@ -71,6 +71,10 @@ jobs:
 **Required**  
 ```string``` The name of the branch to check for Branch Protection Rules.
 
+```PAT```
+**Required**  
+A personal access token that has permissions to check the repositories Branch Protection Rules (most likely the same PAT as below).  
+
 ### Code Cleanup
 
 ```auto_merge```
