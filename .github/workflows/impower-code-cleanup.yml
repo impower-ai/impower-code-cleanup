@@ -38,6 +38,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore NuGet Sources
+      if: inputs.nuget_sources != ''
       run: |
         echo '${{ inputs.nuget_sources }}' | jq -r '.[]' | while read item; do
           echo "Adding NuGet Source: $item"
