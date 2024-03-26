@@ -24,8 +24,8 @@ jobs:
       - name: Check Branch Protection
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-          TARGET_BRANCH: ${{ github.event.inputs.branch }}
-          FAIL_ON_UNPROTECTED: ${{ github.event.inputs.fail_on_unprotected }}
+          TARGET_BRANCH: ${{ inputs.branch }}
+          FAIL_ON_UNPROTECTED: ${{ inputs.fail_on_unprotected }}
         run: |
           echo "Target Branch: $TARGET_BRANCH"
           echo "Fail On Unprotected: $FAIL_ON_UNPROTECTED"
