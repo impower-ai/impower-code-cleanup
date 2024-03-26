@@ -60,7 +60,7 @@ jobs:
 
 ## 3. Adjust inputs & secrets
 
-### With Repository Checks
+### Repository Checks
 
 ```fail_on_unprotected```
 **Optional**  (default: **false**)  
@@ -71,7 +71,7 @@ jobs:
 **Required**  
 ```string``` The name of the branch to check for Branch Protection Rules.
 
-### Without Repository Checks
+### Code Cleanup
 
 ```auto_merge```
 **Required**  
