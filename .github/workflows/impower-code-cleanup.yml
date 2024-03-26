@@ -26,22 +26,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Debug Info
+#    - name: Debug Info
 #      run: |
 #        echo Actor: ${{ github.actor }}
 #        echo Title: ${{ github.event.pull_request.title }}
 #        echo Contains [SKIP CI]: ${{ contains(github.event.pull_request.title, '[SKIP CI]') }}
-      run: |
-        echo '${{ inputs.nuget_sources }}' | jq -r '.[]' | while read item; do
-          echo "$item"
-        done
-      shell: bash
-
 
     - name: Setup .NET Environment 
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
+    - name: Restore NuGet Sources
+      run: |
+        echo '${{ inputs.nuget_sources }}' | jq -r '.[]' | while read item; do
+          echo "Adding NuGet Source: $item"
+          dotnet nuget add source $item
+        done
+      shell: bash
 
     - name: Restore NuGet packages
       run: dotnet restore
