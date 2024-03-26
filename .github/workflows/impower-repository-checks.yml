@@ -4,7 +4,7 @@ on:
     inputs:
       fail_on_unprotected:
         description: 'Fail the workflow if the branch is unprotected (true/false)'
-        required: true
+        required: false
         default: false
         type: boolean
       branch:
