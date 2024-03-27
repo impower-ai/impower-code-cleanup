@@ -19,6 +19,7 @@ on:
 
 jobs:
   check-branch-protection:
+    if: ${{ !contains(github.event.pull_request.title, '[SKIP CI]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check Branch Protection
