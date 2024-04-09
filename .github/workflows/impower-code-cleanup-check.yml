@@ -1,0 +1,67 @@
+name: ReSharper Code Cleanup using Impower Code Standards
+
+on:
+  workflow_call:
+    inputs:
+      nuget_sources:
+        description: "The NuGet sources to restore from"
+        type: string
+        required: false
+    secrets:
+      PAT:
+        description: 'Personal access token passed from the caller workflow'
+        required: true
+
+jobs:
+  build:
+# Only run if PR was merged and title doesn't contain '[SKIP CI]' (!contains is case-insensitive)
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+#    - name: Debug Info
+#      run: |
+#        echo Actor: ${{ github.actor }}
+#        echo Title: ${{ github.event.pull_request.title }}
+#        echo Contains [SKIP CI]: ${{ contains(github.event.pull_request.title, '[SKIP CI]') }}
+
+    - name: Setup .NET Environment 
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore NuGet Sources
+      if: inputs.nuget_sources != ''
+      run: |
+        echo '${{ inputs.nuget_sources }}' | jq -r '.[]' | while read item; do
+          echo "Adding NuGet Source: $item"
+          dotnet nuget add source $item
+        done
+      shell: bash
+
+    - name: Restore NuGet packages
+      run: dotnet restore
+
+    - name: Install ReSharper CLI
+      run: dotnet tool install -g JetBrains.ReSharper.GlobalTools
+
+    - name: Build Solution
+      run: dotnet build --no-restore
+
+    - name: Clone Code Standards Repository
+      uses: actions/checkout@v4
+      with:
+        repository: impower-ai/impower-code-standards
+        path: "impower-code-standards"
+        ref: main
+        token: ${{ secrets.PAT }}
+
+    - name: Run Code Cleanup
+      run: jb cleanupcode --settings="impower-code-standards/dotnet-code-standards.DotSettings" *.sln
+
+    - name: Remove Code Standards Repository
+      run: rm -rf impower-code-standards
+
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: Code Cleanup
